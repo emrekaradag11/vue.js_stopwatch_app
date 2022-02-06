@@ -1,130 +1,171 @@
 <template>
   <div class="hello">
     <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br />
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener"
-        >vue-cli documentation</a
-      >.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel"
-          target="_blank"
-          rel="noopener"
-          >babel</a
+    <div class="container mt-5 pt-5">
+      <div class="clock">
+        <span class="hour"> {{ hour }} </span>
+        <span class="minute"> {{ minute }} </span>
+        <span class="second"> {{ second }} </span>
+        <span class="millisecond"> {{ millisecond }} </span>
+      </div>
+      <div class="col-12 mt-5 pt-5">
+        <button class="btn btnCustom btn-success" @click="counter()">Start</button>
+        <button class="btn btnCustom btn-info" @click="pause()">Pause</button>
+        <button class="btn btnCustom btn-secondary" @click="resume()">Resume</button>
+        <button class="btn btnCustom btn-warning" @click="split()">Split</button>
+        <button class="btn btnCustom btn-danger" @click="reset()">Reset</button>
+      </div>
+      <div class="col-12 mt-5">
+        <table
+          class="table table-responsive table-bordered table-stripped table-hovered"
         >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-typescript"
-          target="_blank"
-          rel="noopener"
-          >typescript</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint"
-          target="_blank"
-          rel="noopener"
-          >eslint</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-unit-jest"
-          target="_blank"
-          rel="noopener"
-          >unit-jest</a
-        >
-      </li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li>
-        <a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a>
-      </li>
-      <li>
-        <a href="https://forum.vuejs.org" target="_blank" rel="noopener"
-          >Forum</a
-        >
-      </li>
-      <li>
-        <a href="https://chat.vuejs.org" target="_blank" rel="noopener"
-          >Community Chat</a
-        >
-      </li>
-      <li>
-        <a href="https://twitter.com/vuejs" target="_blank" rel="noopener"
-          >Twitter</a
-        >
-      </li>
-      <li>
-        <a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a>
-      </li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li>
-        <a href="https://router.vuejs.org" target="_blank" rel="noopener"
-          >vue-router</a
-        >
-      </li>
-      <li>
-        <a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a>
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-devtools#vue-devtools"
-          target="_blank"
-          rel="noopener"
-          >vue-devtools</a
-        >
-      </li>
-      <li>
-        <a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener"
-          >vue-loader</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/awesome-vue"
-          target="_blank"
-          rel="noopener"
-          >awesome-vue</a
-        >
-      </li>
-    </ul>
+          <thead>
+            <tr>
+              <th>#Index</th>
+              <th>#Splitted Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="s in splittedTimes" :key="s">
+              <td>{{ s.id }}</td>
+              <td>
+                {{ s.hour }} : {{ s.minute }} : {{ s.second }} :
+                {{ s.millisecond }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
+import { use } from "vue/types/umd";
 
 @Component
 export default class HelloWorld extends Vue {
   @Prop() private msg!: string;
+  private hour = 0;
+  private minute = 0;
+  private second = 0;
+  private millisecond = 0;
+  private counterInterval = 0;
+  private pauseStatus = true;
+  private splittedTimeIndex = 0;
+  private splittedTimes = [] as any;
+
+  private updateWatch() {
+    if (this.pauseStatus == false) {
+      this.millisecond++;
+      if (this.millisecond == 100) {
+        this.millisecond = 0;
+        this.second++;
+      }
+      if (this.second == 60) {
+        this.second = 0;
+        this.minute++;
+      }
+      if (this.minute == 60) {
+        this.minute = 0;
+        this.hour++;
+      }
+    }
+  }
+  private counter() {
+    this.pauseStatus = false;
+    clearInterval(this.counterInterval);
+    this.counterInterval = setInterval(this.updateWatch, 10);
+  }
+  private pause() {
+    this.pauseStatus = true;
+  }
+  private resume() {
+    this.pauseStatus = false;
+  }
+  private split() {
+    this.splittedTimeIndex++;
+    this.splittedTimes.push({
+      id: this.splittedTimeIndex,
+      hour: this.hour,
+      minute: this.minute,
+      second: this.second,
+      millisecond: this.millisecond,
+    });
+  }
+  private reset() {
+    this.second = 0;
+    this.millisecond = 0;
+    this.hour = 0;
+    this.second = 0;
+    this.pauseStatus = true;
+  }
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
-h3 {
-  margin: 40px 0 0;
+* {
+  font-family: "square sans serif";
 }
-ul {
-  list-style-type: none;
-  padding: 0;
+@font-face {
+  font-family: "square sans serif";
+  src: url("~@/assets/fonts/square_sans_serif_7.ttf");
 }
-li {
-  display: inline-block;
-  margin: 0 10px;
+.clock {
+  background: rgb(0, 196, 255);
+  width: 10em;
+  margin: 40px auto 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 6em;
+  border-radius: 18px;
+  color: white;
+  position: relative;
+  &:before,
+  &:after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(100% + 30px);
+    background: inherit;
+    height: calc(100% + 30px);
+    border-radius: inherit;
+    opacity: 0.4;
+    z-index: -1;
+  }
+  &:after {
+    width: calc(100% + 60px);
+    height: calc(100% + 60px);
+    opacity: 0.2;
+  }
+  span {
+    margin: 0 0.3em;
+    position: relative;
+    min-width: 1.8em;
+    + span:before {
+      content: ":";
+      position: absolute;
+      left: -0.4em;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+  }
 }
-a {
-  color: #42b983;
+
+.btnCustom {
+  //background: black;
+  color: white;
+  margin: 0 1em;
+  padding: 0.3em 1.2em;
+  text-transform: uppercase;
+  font-size: 1.4em;
+  &:is(:hover, :focus, :active) {
+    //background: #00c4ff;
+    //color: white;
+  }
 }
 </style>
